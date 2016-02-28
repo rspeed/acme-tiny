@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse, subprocess, json, os, sys, base64, binascii, time, hashlib, re, copy, textwrap, logging
+import argparse, subprocess, json, os, pkg_resources, sys, base64, binascii, time, hashlib, re, copy, textwrap, logging
 try:
     from urllib.request import urlopen # Python 3
 except ImportError:
@@ -11,6 +11,11 @@ DEFAULT_CA = "https://acme-v01.api.letsencrypt.org"
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.StreamHandler())
 LOGGER.setLevel(logging.INFO)
+
+try: # Installed via setuptools
+    __version__ = pkg_resources.require("acme-tiny").pop().version
+except (pkg_resources.DistributionNotFound, IndexError): 
+    __version__ = "0.0.0"
 
 def get_crt(account_key, csr, acme_dir, log=LOGGER, CA=DEFAULT_CA):
     # helper function base64 encode for jose spec
@@ -183,6 +188,7 @@ def main(argv=None):
             ==============================================
             """)
     )
+    parser.add_argument("-V", "--version", action="version", version="%(prog)s {version}".format(version=__version__))
     parser.add_argument("--account-key", required=True, help="path to your Let's Encrypt account private key")
     parser.add_argument("--csr", required=True, help="path to your certificate signing request")
     parser.add_argument("--acme-dir", required=True, help="path to the .well-known/acme-challenge/ directory")
